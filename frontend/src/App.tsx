@@ -1,9 +1,49 @@
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import Login from './components/Login';
+import SupervisorDashboard from './components/SupervisorDashboard';
+import ExecutorDashboard from './components/ExecutorDashboard';
+import ProtectedRoute from './components/ProtectedRoute';
+
 function App() {
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
-      <h1 className="text-4xl font-bold text-blue-600">Hola Apuntador</h1>
-    </div>
-  )
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          
+          <Route 
+            path="/supervisor" 
+            element={
+              <ProtectedRoute allowedRole="supervisor">
+                <SupervisorDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/ejecutivo" 
+            element={
+              <ProtectedRoute allowedRole="ejecutivo">
+                <ExecutorDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* Default redirect based on lack of knowledge of user state here, ProtectedRoute handles it if we navigate to / */}
+          <Route 
+            path="/" 
+            element={
+              <ProtectedRoute>
+                {/* A dummy component, ProtectedRoute will redirect to correct dashboard */}
+                <Navigate to="/login" replace />
+              </ProtectedRoute>
+            } 
+          />
+        </Routes>
+      </Router>
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;
