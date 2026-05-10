@@ -19,13 +19,23 @@ export const getCases = async (req: Request, res: Response) => {
 export const createCase = async (req: Request, res: Response) => {
   try {
     const { name, type, content } = req.body;
+    
+    // ✅ Validación agregada
+    if (!name || !type || !content) {
+      return res.status(400).json({ error: 'Name, type, and content are required' });
+    }
+    
     const createdById = req.user!.id; // from auth middleware
 
     const newCase = await prisma.case.create({
       data: { name, type, content, createdById }
     });
     res.status(201).json(newCase);
-  } catch (error) {
+  } catch (error: any) {
+    // ✅ Diferenciar error de unique constraint
+    if (error?.code === 'P2002') {
+      return res.status(409).json({ error: 'A case with this name already exists' });
+    }
     res.status(500).json({ error: 'Server error' });
   }
 };

@@ -18,7 +18,7 @@ model User {
 
 model Case {
   id          String   @id @default(uuid())
-  name        String
+  name        String   @unique
   type        String
   content     String
   createdById String

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Plus, Edit2, Trash2, LogOut, X } from 'lucide-react';
 import api from '../services/api';
-import { Case } from '../types';
+import type { Case } from '../types';
 
 export default function SupervisorDashboard() {
   const { user, logout } = useAuth();

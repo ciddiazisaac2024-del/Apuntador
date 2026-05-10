@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Search, Copy, Check, LogOut } from 'lucide-react';
 import api from '../services/api';
-import { Case } from '../types';
+import type { Case } from '../types';
 
 export default function ExecutorDashboard() {
   const { user, logout } = useAuth();
