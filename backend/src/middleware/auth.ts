@@ -24,7 +24,11 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction) => 
   const token = authHeader.split(' ')[1];
 
   try {
-    const secret = process.env.JWT_SECRET || 'super-secret-jwt-key-replace-me-later';
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      console.error('FATAL: JWT_SECRET environment variable is not set');
+      process.exit(1);
+    }
     const decoded = jwt.verify(token, secret) as AuthPayload;
     req.user = decoded;
     next();

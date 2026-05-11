@@ -20,7 +20,11 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const secret = process.env.JWT_SECRET || 'super-secret-jwt-key-replace-me-later';
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      console.error('FATAL: JWT_SECRET environment variable is not set');
+      process.exit(1);
+    }
     const token = jwt.sign(
       { id: user.id, username: user.username, role: user.role },
       secret,
