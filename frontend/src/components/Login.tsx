@@ -19,9 +19,9 @@ export default function Login() {
 
     try {
       const response = await api.post('/auth/login', { username, password });
-      const { token, user } = response.data;
+      const { user } = response.data;
       
-      login(user, token);
+      login(user);
       
       if (user.role === 'supervisor') {
         navigate('/supervisor');

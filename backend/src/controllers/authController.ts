@@ -31,8 +31,14 @@ export const login = async (req: Request, res: Response) => {
       { expiresIn: '1d' }
     );
 
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    });
+
     res.json({
-      token,
       user: {
         id: user.id,
         username: user.username,
@@ -61,4 +67,13 @@ export const register = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
   }
+};
+
+export const logout = async (req: Request, res: Response) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+  });
+  res.json({ message: 'Logged out successfully' });
 };
