@@ -8,11 +8,12 @@ import scriptsRoutes from './routes/scripts';
 const app = express();
 
 app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true, // Permite el envío de cookies
 }));
-app.use(cookieParser());
+
 app.use(express.json());
+app.use(cookieParser()); // ✅ Parsea cookies en req.cookies
 
 app.use('/api/auth', authRoutes);
 app.use('/api/cases', casesRoutes);

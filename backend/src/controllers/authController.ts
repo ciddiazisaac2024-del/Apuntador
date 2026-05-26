@@ -3,6 +3,15 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import prisma from '../config/db';
 
+const getSecret = (): string => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    console.error('FATAL: JWT_SECRET environment variable is not set');
+    process.exit(1);
+  }
+  return secret;
+};
+
 export const login = async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
@@ -11,33 +20,22 @@ export const login = async (req: Request, res: Response) => {
       where: { username }
     });
 
-    if (!user) {
+    if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const isValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isValid) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
+    const tokenPayload = { id: user.id, username: user.username, role: user.role };
+    const token = jwt.sign(tokenPayload, getSecret(), { expiresIn: '8h' });
 
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
-      console.error('FATAL: JWT_SECRET environment variable is not set');
-      process.exit(1);
-    }
-    const token = jwt.sign(
-      { id: user.id, username: user.username, role: user.role },
-      secret,
-      { expiresIn: '1d' }
-    );
-
+    // ✅ Enviamos el token en una cookie HttpOnly
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      maxAge: 8 * 60 * 60 * 1000, // 8 horas
     });
 
+    // ✅ Solo devolvemos datos no sensibles del usuario
     res.json({
       user: {
         id: user.id,
@@ -69,11 +67,11 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
-export const logout = async (req: Request, res: Response) => {
+export const logout = async (_req: Request, res: Response) => {
   res.clearCookie('token', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
   });
-  res.json({ message: 'Logged out successfully' });
+  res.json({ message: 'Logged out' });
 };
