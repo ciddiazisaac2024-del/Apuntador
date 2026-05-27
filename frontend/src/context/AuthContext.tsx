@@ -1,43 +1,48 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
-import type { User } from '../types';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import type { User } from '../types';
 
 interface AuthContextType {
   user: User | null;
-  login: (userData: User) => void;
+  login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
 
-export const AuthContext = createContext<AuthContextType | null>(null);
+const AuthContext = createContext<AuthContextType>({} as AuthContextType);
+
+export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    const stored = localStorage.getItem('user');
+    return stored ? JSON.parse(stored) : null;
+  });
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    // Check localStorage on mount
-    const storedUser = localStorage.getItem('user');
-
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
-
-  const login = (userData: User) => {
-    setUser(userData);
+  const login = async (username: string, password: string) => {
+    const response = await api.post('/auth/login', { username, password });
+    const { user: userData } = response.data;
     localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+    if (userData.role === 'supervisor') {
+      navigate('/supervisor');
+    } else {
+      navigate('/ejecutivo');
+    }
   };
 
   const logout = async () => {
     try {
       await api.post('/auth/logout');
-    } catch (error) {
-      console.error('Error logging out', error);
-    } finally {
-      setUser(null);
-      localStorage.removeItem('user');
+    } catch {
+      // Incluso si falla, limpiamos el estado local
     }
+    localStorage.removeItem('user');
+    setUser(null);
+    navigate('/login');
   };
 
   return (
@@ -45,12 +50,4 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
 };

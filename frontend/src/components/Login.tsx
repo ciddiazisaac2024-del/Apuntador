@@ -1,7 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -10,7 +8,6 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   
   const { login } = useAuth();
-  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,16 +15,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await api.post('/auth/login', { username, password });
-      const { user } = response.data;
-      
-      login(user);
-      
-      if (user.role === 'supervisor') {
-        navigate('/supervisor');
-      } else {
-        navigate('/ejecutivo');
-      }
+      await login(username, password);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Error al iniciar sesión');
     } finally {
