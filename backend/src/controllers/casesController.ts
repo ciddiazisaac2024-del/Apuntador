@@ -45,12 +45,19 @@ export const updateCase = async (req: Request, res: Response) => {
     const id = req.params.id as string;
     const { name, type, content } = req.body;
 
+    if (!name || !type || !content) {
+      return res.status(400).json({ error: 'Name, type, and content are required' });
+    }
+
     const updatedCase = await prisma.case.update({
       where: { id },
       data: { name, type, content }
     });
     res.json(updatedCase);
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === 'P2002') {
+      return res.status(409).json({ error: 'A case with this name already exists' });
+    }
     res.status(500).json({ error: 'Server error or case not found' });
   }
 };
