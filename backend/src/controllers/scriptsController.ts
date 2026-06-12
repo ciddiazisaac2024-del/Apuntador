@@ -5,10 +5,6 @@ export const searchScripts = async (req: Request, res: Response) => {
   try {
     const { name } = req.query;
 
-    if (!name || typeof name !== 'string') {
-      return res.status(400).json({ error: 'Name query parameter is required' });
-    }
-
     const cases = await prisma.case.findMany({
       where: {
         name: {

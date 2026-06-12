@@ -1,21 +1,14 @@
 import { Router } from 'express';
-import rateLimit from 'express-rate-limit';
 import { login, register, logout, me } from '../controllers/authController';
 import { requireAuth, requireRole } from '../middleware/auth';
+import { authLimiter } from '../middleware/rateLimiter';
+import { validate } from '../middleware/validate';
+import { loginSchema, registerSchema } from '../schemas';
 
 const router = Router();
 
-// ✅ Rate limiter específico para login
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 10, // máximo 10 intentos por IP en ese período
-  message: { error: 'Too many login attempts, please try again later' },
-  standardHeaders: true, // Devuelve info de rate limit en headers `RateLimit-*`
-  legacyHeaders: false,  // Desactiva headers `X-RateLimit-*` (obsoletos)
-});
-
-router.post('/login', authLimiter, login);  // ✅ Protegido
-router.post('/register', requireAuth, requireRole('supervisor'), register); // ✅ Protegido solo para supervisores
+router.post('/login', authLimiter, validate(loginSchema), login);  // ✅ Protegido
+router.post('/register', requireAuth, requireRole('supervisor'), authLimiter, validate(registerSchema), register); // ✅ Protegido solo para supervisores
 router.post('/logout', logout);
 router.get('/me', requireAuth, me); // ✅ Endpoint para validar sesión
 
