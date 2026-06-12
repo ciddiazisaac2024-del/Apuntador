@@ -12,8 +12,13 @@ app.use(cors({
   credentials: true, // Permite el envío de cookies
 }));
 
+import { apiLimiter } from './middleware/rateLimiter';
+
 app.use(express.json());
 app.use(cookieParser()); // ✅ Parsea cookies en req.cookies
+
+// Apply rate limiter to all API routes
+app.use('/api', apiLimiter);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/cases', casesRoutes);
