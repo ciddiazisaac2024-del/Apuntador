@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Plus, Edit2, Trash2, LogOut, X } from 'lucide-react';
 import api from '../services/api';
-import type { Case } from '../types';
+import type { Case, CaseFormData } from '../types';
 
 export default function SupervisorDashboard() {
   const { user, logout } = useAuth();
@@ -11,7 +11,6 @@ export default function SupervisorDashboard() {
   const [error, setError] = useState<string | null>(null);
   
   // Modal state
-  type CaseFormData = Pick<Case, 'name' | 'type' | 'content'> & { id?: string };
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentCase, setCurrentCase] = useState<CaseFormData>({ name: '', type: '', content: '' });
   const [isEditing, setIsEditing] = useState(false);

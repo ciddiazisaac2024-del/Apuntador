@@ -10,3 +10,5 @@ export interface Case {
   type: string;
   content: string;
 }
+
+export type CaseFormData = Pick<Case, 'name' | 'type' | 'content'> & { id?: string };
