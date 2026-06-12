@@ -21,11 +21,6 @@ export const createCase = async (req: Request, res: Response) => {
   try {
     const { name, type, content } = req.body;
     
-    // ✅ Validación agregada
-    if (!name || !type || !content) {
-      return res.status(400).json({ error: 'Name, type, and content are required' });
-    }
-    
     const createdById = req.user!.id; // from auth middleware
 
     const newCase = await prisma.case.create({
@@ -46,10 +41,6 @@ export const updateCase = async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
     const { name, type, content } = req.body;
-
-    if (!name || !type || !content) {
-      return res.status(400).json({ error: 'Name, type, and content are required' });
-    }
 
     const updatedCase = await prisma.case.update({
       where: { id },
