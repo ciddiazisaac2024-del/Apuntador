@@ -12,7 +12,8 @@ export const searchScripts = async (req: Request, res: Response) => {
     const cases = await prisma.case.findMany({
       where: {
         name: {
-          contains: name
+          contains: name,
+          mode: 'insensitive'
         }
       },
       select: {
@@ -25,6 +26,7 @@ export const searchScripts = async (req: Request, res: Response) => {
 
     res.json({ cases });
   } catch (error) {
+    console.error('Error in searchScripts:', error);
     res.status(500).json({ error: 'Server error' });
   }
 };

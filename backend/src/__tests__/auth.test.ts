@@ -14,6 +14,14 @@ vi.mock('../config/db', () => ({
   },
 }));
 
+// Mock bcrypt
+vi.mock('bcryptjs', () => ({
+  default: {
+    hash: vi.fn().mockResolvedValue('hashed_password'),
+    compare: vi.fn().mockImplementation((plain, hash) => plain === 'correctpassword' && hash === 'hashed_password'),
+  }
+}));
+
 process.env.JWT_SECRET = 'test_secret_key';
 
 describe('Auth API', () => {
@@ -40,7 +48,7 @@ describe('Auth API', () => {
         id: '1',
         username: 'testuser',
         role: 'supervisor',
-        passwordHash: await bcrypt.hash('correctpassword', 1),
+        passwordHash: 'hashed_password', // Mocked hash
       };
       vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
 

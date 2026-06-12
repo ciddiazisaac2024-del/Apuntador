@@ -13,6 +13,8 @@ export default function ExecutorDashboard() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchResults = async () => {
       if (!searchTerm.trim()) {
         setResults([]);
@@ -20,12 +22,18 @@ export default function ExecutorDashboard() {
       }
       setLoading(true);
       try {
-        const response = await api.get(`/scripts/search?name=${encodeURIComponent(searchTerm)}`);
+        const response = await api.get(`/scripts/search?name=${encodeURIComponent(searchTerm)}`, {
+          signal: controller.signal
+        });
         setResults(response.data.cases);
-      } catch (error) {
-        console.error('Error fetching scripts:', error);
+      } catch (error: any) {
+        if (error.name !== 'CanceledError' && error.message !== 'canceled') {
+          console.error('Error fetching scripts:', error);
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
@@ -33,7 +41,10 @@ export default function ExecutorDashboard() {
       fetchResults();
     }, 300);
 
-    return () => clearTimeout(delayDebounceFn);
+    return () => {
+      clearTimeout(delayDebounceFn);
+      controller.abort();
+    };
   }, [searchTerm]);
 
   const handleCopy = async () => {

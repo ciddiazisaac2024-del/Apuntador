@@ -15,14 +15,7 @@ declare global {
   }
 }
 
-const getSecret = (): string => {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    console.error('FATAL: JWT_SECRET environment variable is not set');
-    process.exit(1);
-  }
-  return secret;
-};
+import { getSecret } from '../config/jwt';
 
 export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
   // ✅ Leer token desde la cookie

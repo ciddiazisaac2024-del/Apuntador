@@ -12,6 +12,7 @@ export const getCases = async (req: Request, res: Response) => {
     });
     res.json(cases);
   } catch (error) {
+    console.error('Error in getCases:', error);
     res.status(500).json({ error: 'Server error' });
   }
 };
@@ -32,6 +33,7 @@ export const createCase = async (req: Request, res: Response) => {
     });
     res.status(201).json(newCase);
   } catch (error: any) {
+    console.error('Error in createCase:', error);
     // ✅ Diferenciar error de unique constraint
     if (error?.code === 'P2002') {
       return res.status(409).json({ error: 'A case with this name already exists' });
@@ -55,6 +57,7 @@ export const updateCase = async (req: Request, res: Response) => {
     });
     res.json(updatedCase);
   } catch (error: any) {
+    console.error('Error in updateCase:', error);
     if (error?.code === 'P2002') {
       return res.status(409).json({ error: 'A case with this name already exists' });
     }
@@ -73,6 +76,7 @@ export const deleteCase = async (req: Request, res: Response) => {
     });
     res.status(204).send();
   } catch (error: any) {
+    console.error('Error in deleteCase:', error);
     if (error?.code === 'P2025') {
       return res.status(404).json({ error: 'Case not found' });
     }

@@ -8,18 +8,22 @@ export default function SupervisorDashboard() {
   const { user, logout } = useAuth();
   const [cases, setCases] = useState<Case[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   // Modal state
+  type CaseFormData = Pick<Case, 'name' | 'type' | 'content'> & { id?: string };
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentCase, setCurrentCase] = useState<Partial<Case>>({});
+  const [currentCase, setCurrentCase] = useState<CaseFormData>({ name: '', type: '', content: '' });
   const [isEditing, setIsEditing] = useState(false);
 
   const fetchCases = async () => {
     try {
+      setError(null);
       const response = await api.get('/cases');
       setCases(response.data);
-    } catch (error) {
-      console.error('Error fetching cases', error);
+    } catch (err: any) {
+      console.error('Error fetching cases', err);
+      setError('Error al cargar los casos. Intenta de nuevo.');
     } finally {
       setLoading(false);
     }
@@ -30,12 +34,14 @@ export default function SupervisorDashboard() {
   }, []);
 
   const openNewModal = () => {
+    setError(null);
     setIsEditing(false);
     setCurrentCase({ name: '', type: '', content: '' });
     setIsModalOpen(true);
   };
 
   const openEditModal = (c: Case) => {
+    setError(null);
     setIsEditing(true);
     setCurrentCase(c);
     setIsModalOpen(true);
@@ -44,10 +50,12 @@ export default function SupervisorDashboard() {
   const handleDelete = async (id: string) => {
     if (window.confirm('¿Estás seguro de eliminar este caso?')) {
       try {
+        setError(null);
         await api.delete(`/cases/${id}`);
         fetchCases();
-      } catch (error) {
-        console.error('Error deleting case', error);
+      } catch (err: any) {
+        console.error('Error deleting case', err);
+        setError('Error al eliminar el caso.');
       }
     }
   };
@@ -55,6 +63,7 @@ export default function SupervisorDashboard() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      setError(null);
       if (isEditing && currentCase.id) {
         await api.put(`/cases/${currentCase.id}`, currentCase);
       } else {
@@ -62,8 +71,9 @@ export default function SupervisorDashboard() {
       }
       setIsModalOpen(false);
       fetchCases();
-    } catch (error) {
-      console.error('Error saving case', error);
+    } catch (err: any) {
+      console.error('Error saving case', err);
+      setError(err.response?.data?.error || 'Error al guardar el caso.');
     }
   };
 
@@ -98,6 +108,12 @@ export default function SupervisorDashboard() {
             Nuevo Caso
           </button>
         </div>
+
+        {error && !isModalOpen && (
+          <div className="mb-6 p-4 bg-red-50 text-red-700 border border-red-200 rounded-lg flex items-center">
+            <span className="font-medium mr-2">Error:</span> {error}
+          </div>
+        )}
 
         {/* Table */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -181,12 +197,17 @@ export default function SupervisorDashboard() {
             
             <form onSubmit={handleSave} className="flex flex-col flex-grow overflow-hidden">
               <div className="px-6 py-4 overflow-y-auto space-y-4">
+                {error && (
+                  <div className="p-3 bg-red-50 text-red-700 border border-red-200 rounded-lg text-sm">
+                    {error}
+                  </div>
+                )}
                 <div>
                   <label className="block text-sm font-medium text-slate-700">Nombre del Caso</label>
                   <input
                     type="text"
                     required
-                    value={currentCase.name || ''}
+                    value={currentCase.name}
                     onChange={(e) => setCurrentCase({ ...currentCase, name: e.target.value })}
                     className="mt-1 w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     placeholder="Ej. Reclamo por garantía"
@@ -197,7 +218,7 @@ export default function SupervisorDashboard() {
                   <input
                     type="text"
                     required
-                    value={currentCase.type || ''}
+                    value={currentCase.type}
                     onChange={(e) => setCurrentCase({ ...currentCase, type: e.target.value })}
                     className="mt-1 w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     placeholder="Ej. Facturación"
@@ -207,7 +228,7 @@ export default function SupervisorDashboard() {
                   <label className="block text-sm font-medium text-slate-700">Contenido del Script</label>
                   <textarea
                     required
-                    value={currentCase.content || ''}
+                    value={currentCase.content}
                     onChange={(e) => setCurrentCase({ ...currentCase, content: e.target.value })}
                     className="mt-1 w-full flex-grow min-h-[200px] px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"
                     placeholder="Escribe el script aquí..."

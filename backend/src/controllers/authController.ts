@@ -3,14 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import prisma from '../config/db';
 
-const getSecret = (): string => {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    console.error('FATAL: JWT_SECRET environment variable is not set');
-    process.exit(1);
-  }
-  return secret;
-};
+import { getSecret } from '../config/jwt';
 
 export const login = async (req: Request, res: Response) => {
   try {
@@ -44,6 +37,7 @@ export const login = async (req: Request, res: Response) => {
       }
     });
   } catch (error) {
+    console.error('Error in login:', error);
     res.status(500).json({ error: 'Server error' });
   }
 };
@@ -63,6 +57,7 @@ export const register = async (req: Request, res: Response) => {
 
     res.status(201).json({ message: 'User created successfully', id: user.id });
   } catch (error) {
+    console.error('Error in register:', error);
     res.status(500).json({ error: 'Server error' });
   }
 };
