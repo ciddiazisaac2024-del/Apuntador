@@ -75,3 +75,7 @@ export const logout = async (_req: Request, res: Response) => {
   });
   res.json({ message: 'Logged out' });
 };
+
+export const me = async (req: Request, res: Response) => {
+  res.json({ user: req.user });
+};

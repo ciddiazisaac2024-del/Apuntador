@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
-import { login, register, logout } from '../controllers/authController';
+import { login, register, logout, me } from '../controllers/authController';
 import { requireAuth, requireRole } from '../middleware/auth';
 
 const router = Router();
@@ -17,5 +17,6 @@ const authLimiter = rateLimit({
 router.post('/login', authLimiter, login);  // ✅ Protegido
 router.post('/register', requireAuth, requireRole('supervisor'), register); // ✅ Protegido solo para supervisores
 router.post('/logout', logout);
+router.get('/me', requireAuth, me); // ✅ Endpoint para validar sesión
 
 export default router;
