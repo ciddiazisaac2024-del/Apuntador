@@ -58,7 +58,10 @@ export const updateCase = async (req: Request, res: Response) => {
     if (error?.code === 'P2002') {
       return res.status(409).json({ error: 'A case with this name already exists' });
     }
-    res.status(500).json({ error: 'Server error or case not found' });
+    if (error?.code === 'P2025') {
+      return res.status(404).json({ error: 'Case not found' });
+    }
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -69,7 +72,10 @@ export const deleteCase = async (req: Request, res: Response) => {
       where: { id }
     });
     res.status(204).send();
-  } catch (error) {
-    res.status(500).json({ error: 'Server error or case not found' });
+  } catch (error: any) {
+    if (error?.code === 'P2025') {
+      return res.status(404).json({ error: 'Case not found' });
+    }
+    res.status(500).json({ error: 'Server error' });
   }
 };
